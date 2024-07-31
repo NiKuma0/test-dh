@@ -77,17 +77,20 @@ class Service {
     console.log('  Fetching...');
     let res = await this.apiClient.getInstances();
     const pages = res.info.pages;
+    let promises = [];
     for(let i: number = 1; i <= pages; i++){
-      this.apiClient.getInstances(i).then((res) => {
+      promises.push(this.apiClient.getInstances(i).then((res) => {
         if (!res.results) { return }
         res.results.forEach((instance) => {
           data[0].push(instance.name);
           data[1].push(instance);
         })
-      })
+      }))
     }
-    console.log('  Inserting...')
-    await this.repo.createInstances(data);
+    await Promise.all(promises)
+    console.log(data);
+    console.log(`  Fetched ${data[1].length} results.`)
+    // await this.repo.createInstances(data);
   }
 }
 
